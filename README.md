@@ -12,4 +12,8 @@ Alternatively, one with HTMLSpecialChars encoded:
 
 Click on it to use. Note: The only way to undo this at the moment is to reload the page!
 
-To modify options, edit a file in the repo, minify, and paste it into the 'URL' component of your bookmarklet.
+To modify options, edit a file in the repo, minify, encapsulate it like so:
+
+`javascript:(function(){ // code goes here })();`
+
+and paste it into the 'URL' component of your bookmarklet.
