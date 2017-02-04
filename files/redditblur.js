@@ -7,9 +7,15 @@
  * Also, what is a style guide
 */
 
-hideSubredditInfo = false;  // Hides subreddit info
-hideSideLists = true;       // Hides mod/recent links lists
-hideSidebar = false;        // Hides the whole sidebar
+hideSubredditInfo = true;         // Hides subreddit info
+hideSideLists = true;             // Hides mod/recent links lists
+hideSidebar = false;              // Hides the whole sidebar
+useDefaultStyle = true;           // Unchecks the "Use subreddit style". Requires undoing to show the theme again. Don't know RES hooks for this.
+hideSubmitButtons = true;		  // Hides submit buttons to avoid giving away the subreddit.
+hideHeader = true;				  // Hides header. You know, because there might be information in there.
+hideUsernameMentions = true;      // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
+hideSubredditLinks = true;        // Same as above.
+
 
 // Declare an empty array of usernames
 unames = [];                
@@ -24,7 +30,7 @@ colors = ['blue', 'black', 'orange', 'yellow', 'olive', 'maroon', 'purple', 'fuc
 	'silver', '#1cd100', '#b02ad1', '#2ad199', '#d12a2a', '#ab5b00', '#226bab', '#7c8500', '#850035', '#006a85', '#6a0085',    // Less common, but still somewhat distinguishable
 	'#1b3785', '#0d5e00', '#005e58', '#00005e', '#5e2713', '#003807', '#382d00', '#380b29'];                                   // Can't get the top off the bottom of the barrel. Getting muddy.
 
-// Reserved classes and associated colors. Not in use yet, but defined for later expansion.
+// Reserved classes and associated colors. 
 reservedClasses = ['submitter', 'moderator', 'admin'];
 reservedColors = ['blue', 'green', 'red'];
 
@@ -46,12 +52,16 @@ function setColor(el, color) {
 /**
  * Set innerHTML of elements by class name
  * @param {string} className - A CSS class
- * @param {string} str - A string
  */
-function setByClassName(className, str) {
+function toggleClassVisibility(className) {
 	[].forEach.call(
 		document.getElementsByClassName(className), function(el) {
-			el.innerHTML = str;
+			// if (removeFromFlow = false){
+				// el.style.visibility = el.style.visibility == 'hidden' ? 'visible' : 'hidden';    // Make invisible.
+				// el.style.height = el.style.height == '0px' ? '' : '0px';                         // Toggle height between 0px and CSS-declared height
+			// } else {
+				el.style.display = el.style.display == 'none' ? '' : 'none';    // Make invisible.  // This is fine.
+			// }
 		}
 	);
 }
@@ -117,30 +127,49 @@ function checkReserved(el) {
 );
 
 // Hide link info, so that its IP can't be backtraced with Visual Basic
-setByClassName('linkinfo', '');
+toggleClassVisibility('linkinfo');
 
 // Iterate through tags with class "user" (should only be the one in the header by the logout button)
-setByClassName('user', 'Username and stats hidden');
+toggleClassVisibility('user');
 
 // Hide the whole sidebar for privacy (maximum paranoia). If not, hide elements individually
 if (hideSidebar == true) { 
-	setByClassName('side', '<div><p><br>Sidebar hidden for privacy</p></div>');
+	toggleClassVisibility('side');
 } else {
 	if (hideSubredditInfo == true) { // Hide all subreddit info. If not, hide elements individually
 		// Hide subreddit info
-		setByClassName('titlebox','Subreddit info hidden');
+		toggleClassVisibility('titlebox');
 	} else {
 		// Find the "set flair", and replace the username and flair with hide text
-		// Since this is a one-off and sets only a child element, we're not using setByClassName function here.
+		// Since this is a one-off and sets only a child element, we're not using toggleClassVisibility function here.
 		[].forEach.call(
 			document.getElementsByClassName('titlebox'), function(el) {
-				elFlair = el.getElementsByClassName('tagline');
-				elFlair[0].innerHTML = "User/flair hidden for privacy"; // Only the first one needs to be set. Should only be one total.
+				elFlair = el.getElementsByClassName('tagline'); // Is Spanish for "The Flair". But seriously, hides the flair element.
+				elFlair[0].style.visibility = elFlair[0].style.visibility == 'hidden' ? 'visible' : 'hidden';
 			}
 		);
 	}
-
-	if (hideSideLists == true) { // Hides the moderators/recent lists
-		setByClassName('sidecontentbox','Mod/recent list hidden for privacy');
-	}
 }
+
+if (hideHeader == true) {
+	// An instance where a <div> has an id! toggleClassVisibility won't work here, let's do it by id.
+	elHead = document.getElementById('header');   // More Spanish. This time it means "The head"
+	elHead.style.display = elHead.style.display == 'none' ? '' : 'none';
+}
+
+if (hideSideLists == true) { // Hides the moderators/recent lists
+	toggleClassVisibility('sidecontentbox');
+}
+
+if (useDefaultStyle == true) {
+	document.getElementById('res-style-checkbox').click();
+}
+
+if (hideSubmitButtons == true) {
+	toggleClassVisibility('sidebox submit submit-link');	// Hides "Submit Link" button.
+	toggleClassVisibility('sidebox submit submit-text');	// Hides "Submit Text" button
+}
+
+
+toggleClassVisibility('commentingAsUser');	// Hides RES  "Speaking as:" box.
+toggleClassVisibility('flair');				// Hides flair - does not work on ::before pseudo-elements
