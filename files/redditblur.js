@@ -55,44 +55,64 @@ function setByClassName(className, str) {
 		}
 	);
 }
+
+/**
+ * Toggles className between class and class-anonymized (as opposed to removing)
+ * Prevents CSS override when we set explicit style properties
+ * @param {Object} el - DOM element
+ * @param {string} str name of the class to toggle
+ */
+function classToggle(el, className) {
+	if (el.classList.contains(className + '-anonymized')) {
+		el.classList.remove(className + '-anonymized');
+		el.classList.add(className);
+	} else {
+		el.classList.remove(className);
+		el.classList.add(className + '-anonymized');
+	}
+}
+
+/**
+ * Checks for reserved classes (admin, submitter, moderator)
+ * Sets to reserved color if found
+ * @param {Object} el - DOM element
+ */
+function checkReserved(el) {
+	reservedFound = false;
+	reservedClasses.forEach(
+		function(className, index) {
+			if(el.classList.contains(className) || el.classList.contains(className + '-anonymized')) {
+				classToggle(el, className);
+				setColor(el, reservedColors[index]);
+				reservedFound = true;
+			}
+		}
+	)
+	return reservedFound;
+}
 	
 // The meat of it all. This iterates through elements with className "author" and does the business.
 // Iterate through all tags with className 'author'	
 [].forEach.call(
 	document.getElementsByClassName('author'), function(el) { // Find all elements with class "author"
 		// Make sure moderator, admin, and submitter classes are excluded, we'll set those separately
-		if (!(el.classList.contains('submitter') && el.classList.contains('moderator') && el.classList.contains('admin'))) {
+		if (!checkReserved(el)) { // Check whether it's a reserved class. If true, a reserved color will be set by the function. If false, continue assigning colors
 			par = el.parentElement; // Get parent element. We only want to make changes to <a> tags that reside within a <p>
 			if (par.tagName.toLowerCase() == 'p' && par.className == "tagline") {
-				uname = el.textContent;
-				if (unames.indexOf(uname) === -1) { // Check to see if the username is already in the array. We don't want duplicates.
-					unames.push(uname); // If not in array, add it.
+				if (el.classList.contains('anonymized')) {
+					setColor(el, '');
+				} else {
+					uname = el.textContent;
+					if (unames.indexOf(uname) === -1) { // Check to see if the username is already in the array. We don't want duplicates.
+						unames.push(uname); // If not in array, add it.
+					}
+					uIndex = unames.indexOf(uname); // Get the index of the unique username that we've been pushing to the array.
+					color = colors[uIndex]; // Get the color that matches the index.
+					setColor(el, color);
 				}
-				uIndex = unames.indexOf(uname); // Get the index of the unique username that we've been pushing to the array.
-				color = colors[uIndex]; // Get the color that matches the index.
-				setColor(el, color);
+				el.classList.toggle('anonymized');
 			}
 		}
-		
-		// We should use an indexOf here and use it with reservedClasses and colors.		
-		// If submitter, set it blue to match the first element found and reddit's scheme
-		if(el.classList.contains('submitter')) {
-			el.classList.remove('submitter'); // Remove the class so it doesn't override our manually set style
-			setColor(el, 'blue');
-		}
-		
-		// If moderator, set it to green
-		if(el.classList.contains('moderator')) {
-			el.classList.remove('moderator');
-			setColor(el, 'green');
-		}
-		
-		// If admin, set it to red
-		if(el.classList.contains('admin')) {
-			el.classList.remove('admin');
-			setColor(el, 'red');
-		}
-		
 	}
 );
 
