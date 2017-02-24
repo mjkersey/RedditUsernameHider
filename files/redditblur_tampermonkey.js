@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Reddit Username Anonymizer
-// @namespace    http://tampermonkey.net/
+// @description	 Adds a button to quickly anonymize screenshots in reddit comments for purposes of taking a screenshot.
 // @version      0.1
-// @description  Anonomizes reddit pages for screenshots
 // @author       mjkersey
 // @match        https://*.reddit.com/*
 // @grant        none
+// @updateURL	 https://raw.githubusercontent.com/mjkersey/RedditUsernameHider/master/files/redditblur_tampermonkey.js
 // @downloadURL	 https://raw.githubusercontent.com/mjkersey/RedditUsernameHider/master/files/redditblur_tampermonkey.js
 // @supportURL   https://github.com/mjkersey/RedditUsernameHider
-
+// @homepage	 https://github.com/mjkersey/RedditUsernameHider
 // ==/UserScript==
 
 /**
@@ -31,23 +31,23 @@
 		hideSubmitButtons = true;		  // Hides submit buttons to avoid giving away the subreddit.
 		hideHeader = true;				  // Hides header. You know, because there might be information in there.
 		hideUsernameMentions = true;      // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
-		hideSubredditMentions = true;      // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
+		hideSubredditMentions = true;     // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
 		hideSubredditLinks = true;        // Same as above.
 
 		// Declare an empty array of usernames
-		unames = [];                
+		unames = [];
 
-		/** 
+		/**
 		 * Array of colors
-		 * The first "author" class it will find is the first one on the page - the submitter. 
-		 * As a result, it needs to remain as the first item in the list. The rest are visually 
+		 * The first "author" class it will find is the first one on the page - the submitter.
+		 * As a result, it needs to remain as the first item in the list. The rest are visually
 		 * distinct, moreso at first, and less so the further down the list we go.
 		 */
 		colors = ['blue', 'black', 'orange', 'yellow', 'olive', 'maroon', 'purple', 'fuchsia', 'lime', 'teal', 'aqua', 'navy', 'gray', // Easily distinguished/common colors
 			'silver', '#1cd100', '#b02ad1', '#2ad199', '#d12a2a', '#ab5b00', '#226bab', '#7c8500', '#850035', '#006a85', '#6a0085',    // Less common, but still somewhat distinguishable
 			'#1b3785', '#0d5e00', '#005e58', '#00005e', '#5e2713', '#003807', '#382d00', '#380b29'];                                   // Can't get the top off the bottom of the barrel. Getting muddy.
 
-		// Reserved classes and associated colors. 
+		// Reserved classes and associated colors.
 		reservedClasses = ['submitter', 'moderator', 'admin'];
 		reservedColors = ['blue', 'green', 'red'];
 
@@ -109,7 +109,7 @@
 						reservedFound = true;
 					}
 				}
-			)
+			);
 			return reservedFound;
 		}
 
@@ -140,9 +140,11 @@
 			// )
 		}
 
+        document.title = 'reddit.com';
+
 		/**
 		 * The meat of it all. This iterates through elements with className "author" and does the business.
-		 * Iterate through all tags with className 'author'	
+		 * Iterate through all tags with className 'author'
 		 */
 		[].forEach.call(
 			document.getElementsByClassName('author'), function(el) {	// Find all elements with class "author"
@@ -154,15 +156,14 @@
 							|| par.tagName.toLowerCase() == 'span'		// Message author tags are in <span>
 						)
 						&& (
-							par.className == 'tagline' 					// Means we're reading a comment	
+							par.className == 'tagline' 					// Means we're reading a comment
 							|| par.className == 'sender' 				// Means we're reading a message
 							|| par.className == 'recipient')			// Ditto
-						) 
-					{ 
+						)
+					{
 						if (el.classList.contains('anonymized')) {		// Means it has already been anonymized, and we can toggle it off. Set our explicit style declaration to '' and let CSS take over
 							setColor(el, '');
 							el.style.cssText = '';
-							
 						} else {
 							uname = el.textContent;
 							if (unames.indexOf(uname) === -1) {			// Check to see if the username is already in the array. We don't want duplicates.
@@ -185,10 +186,10 @@
 		toggleClassVisibility('user');
 
 		// Hide the whole sidebar for privacy (maximum paranoia). If not, hide elements individually
-		if (hideSidebar == true) { 
+		if (hideSidebar === true) {
 			toggleClassVisibility('side');
 		} else {
-			if (hideSubredditInfo == true) { // Hide all subreddit info. If not, hide elements individually
+			if (hideSubredditInfo === true) { // Hide all subreddit info. If not, hide elements individually
 				// Hide subreddit info
 				toggleClassVisibility('titlebox');
 			} else {
@@ -203,29 +204,29 @@
 			}
 		}
 
-		if (hideHeader == true) {
+		if (hideHeader === true) {
 			// An instance where a <div> has an id! toggleClassVisibility won't work here, let's do it by id.
 			elHead = document.getElementById('header');				// More Spanish. This time it means "The head"
 			elHead.style.display = elHead.style.display == 'none' ? '' : 'none';
 		}
 
-		if (hideSideLists == true) { 								// Hides the moderators/recent lists
+		if (hideSideLists === true) { 								// Hides the moderators/recent lists
 			toggleClassVisibility('sidecontentbox');
 		}
 
-		if (useDefaultStyle == true) {
+		if (useDefaultStyle === true) {
 			var styleCheckbox = document.getElementById('res-style-checkbox');
-			if (styleCheckbox != null) {							// Make sure we're actually in a comments section
+			if (styleCheckbox !== null) {							// Make sure we're actually in a comments section
 				styleCheckbox.click();
 			}
 		}
 
-		if (hideSubmitButtons == true) {
+		if (hideSubmitButtons === true) {
 			toggleClassVisibility('sidebox submit submit-link');	// Hides "Submit Link" button.
 			toggleClassVisibility('sidebox submit submit-text');	// Hides "Submit Text" button
 		}
 
-		if (hideUsernameMentions == true) {
+		if (hideUsernameMentions === true) {
 			hideLinks();
 		}
 
