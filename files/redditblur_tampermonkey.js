@@ -3,9 +3,12 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Anonomizes reddit pages for screenshots
-// @author       You
+// @author       mjkersey
 // @match        https://*.reddit.com/*
 // @grant        none
+// @downloadURL	 https://raw.githubusercontent.com/mjkersey/RedditUsernameHider/master/files/redditblur_tampermonkey.js
+// @supportURL   https://github.com/mjkersey/RedditUsernameHider
+
 // ==/UserScript==
 
 /**
