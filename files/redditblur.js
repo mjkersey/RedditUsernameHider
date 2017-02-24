@@ -14,8 +14,8 @@ useDefaultStyle = true;           // Unchecks the "Use subreddit style". Require
 hideSubmitButtons = true;		  // Hides submit buttons to avoid giving away the subreddit.
 hideHeader = true;				  // Hides header. You know, because there might be information in there.
 hideUsernameMentions = true;      // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
+hideSubredditMentions = true;      // Not hooked up, exists for future expansion. Requires evaluating all <a> tags :(
 hideSubredditLinks = true;        // Same as above.
-
 
 // Declare an empty array of usernames
 unames = [];                
@@ -40,10 +40,10 @@ reservedColors = ['blue', 'green', 'red'];
  * @param {string} color - An HTML color; name or #hex accepted
  */
 function setColor(el, color) {
-	if (color !== undefined) {                 // If our distinguishable color exists, set it!
+	if (color !== undefined) {				// If our distinguishable color exists, set it!
 		el.style.backgroundColor = color;
 		el.style.color = color;
-	} else {                                    // Color isn't in the array. You're quoting a huge thread, and we don't have enough easily distinguishable colors to go around. Instead, blur it.
+	} else {								// Color isn't in the array. Must be a big thread, and we're outta colors. Instead, blur it.
 		el.style.cssText = "-webkit-filter: blur(5px); /* Safari */";
 		el.style.cssText = "filter: blur(5px)";
 	}
@@ -56,12 +56,7 @@ function setColor(el, color) {
 function toggleClassVisibility(className) {
 	[].forEach.call(
 		document.getElementsByClassName(className), function(el) {
-			// if (removeFromFlow = false){
-				// el.style.visibility = el.style.visibility == 'hidden' ? 'visible' : 'hidden';    // Make invisible.
-				// el.style.height = el.style.height == '0px' ? '' : '0px';                         // Toggle height between 0px and CSS-declared height
-			// } else {
-				el.style.display = el.style.display == 'none' ? '' : 'none';    // Make invisible.  // This is fine.
-			// }
+			el.style.display = el.style.display == 'none' ? '' : 'none';						// This is fine. Removes it from flow, also eliminating big ol' gaps
 		}
 	);
 }
@@ -100,24 +95,64 @@ function checkReserved(el) {
 	)
 	return reservedFound;
 }
-	
-// The meat of it all. This iterates through elements with className "author" and does the business.
-// Iterate through all tags with className 'author'	
+
+function hideLinks() {
+	// This ain't skookum yet
+	// [].forEach.call(
+		// document.getElementsByTagName('a'), function(el) {
+			// par = el.parentElement;
+			// if (par.tagName.toLowerCase() == 'p') {
+				// console.log('yup, in /p');
+				// if (el.href.indexOf('/u/') > -1) {
+					// uname = el.textContent.replace('/u/', '');	// Get username being called - we can probably move this into its own function too.
+					// if (unames.indexOf(uname) === -1) {			// Check to see if the username is already in the array. We don't want duplicates.
+						// unames.push(uname); 					// If not in array, add it.
+					// }
+					// uIndex = unames.indexOf(uname);				// Get the index of the unique username that we've been pushing to the array.
+					// color = colors[uIndex];						// Get the color that matches the index.
+					// setColor(el, color);
+					// el.classList.toggle('anonymized');
+				// }
+				// if (el.href.indexOf('/r/') > -1) {
+					// el.style.cssText = "-webkit-filter: blur(5px); /* Safari */";
+					// el.style.cssText = "filter: blur(5px)";
+					// el.classList.toggle('anonymized');
+				// }
+			// }
+		// }
+	// )
+}
+
+/**
+ * The meat of it all. This iterates through elements with className "author" and does the business.
+ * Iterate through all tags with className 'author'	
+ */
 [].forEach.call(
-	document.getElementsByClassName('author'), function(el) { // Find all elements with class "author"
-		// Make sure moderator, admin, and submitter classes are excluded, we'll set those separately
-		if (!checkReserved(el)) { // Check whether it's a reserved class. If true, a reserved color will be set by the function. If false, continue assigning colors
-			par = el.parentElement; // Get parent element. We only want to make changes to <a> tags that reside within a <p>
-			if (par.tagName.toLowerCase() == 'p' && par.className == "tagline") {
-				if (el.classList.contains('anonymized')) {
+	document.getElementsByClassName('author'), function(el) {	// Find all elements with class "author"
+		if (!checkReserved(el)) { 								// Check whether it's a reserved class. If true, a reserved color will be set by the function. If false, continue assigning colors
+			par = el.parentElement;								// Get parent element. We only want to make changes to <a> tags within a <p> or <span>
+			if (
+				(
+					par.tagName.toLowerCase() == 'p' 			// Comment author tags are in <p> tags
+					|| par.tagName.toLowerCase() == 'span'		// Message author tags are in <span>
+				)
+				&& (
+					par.className == 'tagline' 					// Means we're reading a comment	
+					|| par.className == 'sender' 				// Means we're reading a message
+					|| par.className == 'recipient')			// Ditto
+				) 
+			{ 
+				if (el.classList.contains('anonymized')) {		// Means it has already been anonymized, and we can toggle it off. Set our explicit style declaration to '' and let CSS take over
 					setColor(el, '');
+					el.style.cssText = '';
+					
 				} else {
 					uname = el.textContent;
-					if (unames.indexOf(uname) === -1) { // Check to see if the username is already in the array. We don't want duplicates.
-						unames.push(uname); // If not in array, add it.
+					if (unames.indexOf(uname) === -1) {			// Check to see if the username is already in the array. We don't want duplicates.
+						unames.push(uname); 					// If not in array, add it.
 					}
-					uIndex = unames.indexOf(uname); // Get the index of the unique username that we've been pushing to the array.
-					color = colors[uIndex]; // Get the color that matches the index.
+					uIndex = unames.indexOf(uname);				// Get the index of the unique username that we've been pushing to the array.
+					color = colors[uIndex];						// Get the color that matches the index.
 					setColor(el, color);
 				}
 				el.classList.toggle('anonymized');
@@ -144,7 +179,7 @@ if (hideSidebar == true) {
 		// Since this is a one-off and sets only a child element, we're not using toggleClassVisibility function here.
 		[].forEach.call(
 			document.getElementsByClassName('titlebox'), function(el) {
-				elFlair = el.getElementsByClassName('tagline'); // Is Spanish for "The Flair". But seriously, hides the flair element.
+				elFlair = el.getElementsByClassName('tagline');	// Is Spanish for "The Flair". But seriously, hides the flair element.
 				elFlair[0].style.visibility = elFlair[0].style.visibility == 'hidden' ? 'visible' : 'hidden';
 			}
 		);
@@ -153,16 +188,19 @@ if (hideSidebar == true) {
 
 if (hideHeader == true) {
 	// An instance where a <div> has an id! toggleClassVisibility won't work here, let's do it by id.
-	elHead = document.getElementById('header');   // More Spanish. This time it means "The head"
+	elHead = document.getElementById('header');				// More Spanish. This time it means "The head"
 	elHead.style.display = elHead.style.display == 'none' ? '' : 'none';
 }
 
-if (hideSideLists == true) { // Hides the moderators/recent lists
+if (hideSideLists == true) { 								// Hides the moderators/recent lists
 	toggleClassVisibility('sidecontentbox');
 }
 
 if (useDefaultStyle == true) {
-	document.getElementById('res-style-checkbox').click();
+	var styleCheckbox = document.getElementById('res-style-checkbox');
+	if (styleCheckbox != null) {							// Make sure we're actually in a comments section
+		styleCheckbox.click();
+	}
 }
 
 if (hideSubmitButtons == true) {
@@ -170,6 +208,10 @@ if (hideSubmitButtons == true) {
 	toggleClassVisibility('sidebox submit submit-text');	// Hides "Submit Text" button
 }
 
+if (hideUsernameMentions == true) {
+	hideLinks();
+}
 
-toggleClassVisibility('commentingAsUser');	// Hides RES  "Speaking as:" box.
-toggleClassVisibility('flair');				// Hides flair - does not work on ::before pseudo-elements
+
+toggleClassVisibility('commentingAsUser');					// Hides RES  "Speaking as:" box.
+toggleClassVisibility('flair');								// Hides flair - does not work on ::before pseudo-elements
