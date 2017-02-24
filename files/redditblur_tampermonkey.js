@@ -1,14 +1,13 @@
 // ==UserScript==
 // @name         Reddit Username Anonymizer
-// @namespace    http://tampermonkey.net/
+// @description	 Adds a button to quickly anonymize screenshots in reddit comments for purposes of taking a screenshot.
 // @version      0.1
-// @description  Anonomizes reddit pages for screenshots
 // @author       mjkersey
+// @license		 GPLv3
 // @match        https://*.reddit.com/*
 // @grant        none
 // @downloadURL	 https://raw.githubusercontent.com/mjkersey/RedditUsernameHider/master/files/redditblur_tampermonkey.js
 // @supportURL   https://github.com/mjkersey/RedditUsernameHider
-
 // ==/UserScript==
 
 /**
